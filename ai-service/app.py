@@ -3,13 +3,18 @@ from flask_cors import CORS
 from services.groq_client import GroqClient
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)   # ✅ must be here
 
 client = GroqClient()
-
 # -------------------------
 # HEALTH CHECK
 # -------------------------
+
+@app.route("/")
+def home():
+    return "AI Server Running ✅"
+
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({
