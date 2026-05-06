@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Carbon Footprint Tracker</title>
+    <title>Carbon Footprint Advisor</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h2>🌱 Carbon Footprint Advisor</h2>
+    <div class="container">
+        <h1>🌱 Carbon Footprint Advisor</h1>
 
-<input type="text" id="inputBox" placeholder="Enter activity">
-<br><br>
+        <input 
+            type="text" 
+            id="inputBox" 
+            placeholder="e.g. driving car daily..."
+        >
 
-<button onclick="describe()">Describe</button>
-<button onclick="recommend()">Recommend</button>
+        <div class="buttons">
+            <button onclick="describe()">Describe</button>
+            <button onclick="recommend()">Recommend</button>
+            <button onclick="generateReport()">Report</button>
+        </div>
 
-<p id="output"></p>
+        <div id="output"></div>
+    </div>
 
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>

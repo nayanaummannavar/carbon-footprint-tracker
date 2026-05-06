@@ -1,21 +1,26 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from services.groq_client import GroqClient
+from services.groq_client import generate_response
+from dotenv import load_dotenv
+import os
+
+
+# Load environment variables
+
+load_dotenv(dotenv_path=".env")
 
 app = Flask(__name__)
-CORS(app)   # ✅ must be here
+CORS(app)
 
-client = GroqClient()
-# -------------------------
-# HEALTH CHECK
-# -------------------------
 
+# ------------------ HOME ------------------
 @app.route("/")
 def home():
-    return "AI Server Running ✅"
+    return "AI Service Running 🚀"
 
 
-@app.route("/health", methods=["GET"])
+# ------------------ HEALTH ------------------
+@app.route("/health")
 def health():
     return jsonify({
         "status": "ok",
@@ -23,75 +28,109 @@ def health():
     })
 
 
-# -------------------------
-# TASK 5: DESCRIBE
-# -------------------------
+# ------------------ DESCRIBE ------------------
 @app.route("/describe", methods=["POST"])
 def describe():
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    if not data or "input" not in data:
-        return jsonify({"error": "Input required"}), 400
+        if not data or "input" not in data:
+            return jsonify({"error": "Input required"}), 400
 
-    prompt = f"Explain the carbon footprint of: {data['input']}"
+        user_input = data.get("input")
 
-    result = client.generate_response(prompt)
+        prompt = f"Explain carbon footprint of: {user_input}"
 
-    return jsonify({
-        "status": "success",
-        "data": result
-    })
+        result = generate_response(prompt)
+
+        print("AI RESULT:", result)  # 👈 ADD THIS
+
+        if "Error:" in result:
+            return jsonify({"status": "error", "data": result}), 500
+
+        return jsonify({"status": "success", "data": result})
+
+    except Exception as e:
+        print("ERROR:", e)  # 👈 ADD THIS
+        return jsonify({"error": str(e)}), 500
 
 
-# -------------------------
-# TASK 6: RECOMMEND
-# -------------------------
+# ------------------ RECOMMEND ------------------
 @app.route("/recommend", methods=["POST"])
 def recommend():
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    if not data or "input" not in data:
-        return jsonify({"error": "Input required"}), 400
+        if not data or "input" not in data:
+            return jsonify({"error": "Input required"}), 400
 
-    prompt = f"Give ways to reduce carbon footprint for: {data['input']}"
+        user_input = data.get("input")
 
-    result = client.generate_response(prompt)
+        prompt = f"""
+        Suggest practical and eco-friendly alternatives for:
+        {user_input}
 
-    return jsonify({
-        "status": "success",
-        "data": result
-    })
+        Give 3-5 actionable suggestions.
+        """
+
+        result = generate_response(prompt)
+
+        if "Error:" in result:
+            return jsonify({
+                "status": "error",
+                "data": result
+            }), 500
+
+        return jsonify({
+            "status": "success",
+            "data": result
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-# -------------------------
-# TASK 6: GENERATE REPORT
-# -------------------------
+# ------------------ GENERATE REPORT ------------------
 @app.route("/generate-report", methods=["POST"])
 def generate_report():
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    if not data or "activities" not in data:
-        return jsonify({"error": "Activities required"}), 400
+        if not data or "input" not in data:
+            return jsonify({"error": "Input required"}), 400
 
-    prompt = f"""
-    Create a carbon footprint report for:
-    {data['activities']}
+        user_input = data.get("input")
 
-    Include:
-    - Impact
-    - Suggestions
-    """
+        prompt = f"""
+        Create a structured carbon footprint report for:
+        {user_input}
 
-    result = client.generate_response(prompt)
+        Include:
+        1. Estimated emissions
+        2. Environmental impact
+        3. Reduction tips
+        4. Conclusion
 
-    return jsonify({
-        "status": "success",
-        "report": result
-    })
+        Format in bullet points.
+        """
+
+        result = generate_response(prompt)
+
+        if "Error:" in result:
+            return jsonify({
+                "status": "error",
+                "data": result
+            }), 500
+
+        return jsonify({
+            "status": "success",
+            "data": result
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-# -------------------------
-# RUN SERVER
-# -------------------------
+# ------------------ RUN SERVER ------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=False)
